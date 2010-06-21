@@ -14,7 +14,7 @@ our $VERSION = '0.44';
 
 sub ua {
     my $self = shift;
-    $self->{ua} = shift if $@;
+    $self->{ua} = shift if @_;
     return $self->{ua};
 }
 
