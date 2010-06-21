@@ -12,13 +12,10 @@ use Yahoo::Search::XML 20100612;
 
 our $VERSION = '0.44';
 
-my $ua;
-sub _ua {
-    return $ua if $ua;
-    $ua = LWP::UserAgent->new;
-    $ua->agent(__PACKAGE__ . '/' . $VERSION);
-    $ua->env_proxy;
-    $ua;
+sub ua {
+    my $self = shift;
+    $self->{ua} = shift if $@;
+    return $self->{ua};
 }
 
 sub new {
@@ -27,6 +24,12 @@ sub new {
     return bless {
         appid => $args{appid},
         on_error => $args{on_error} || sub { undef },
+        ua => $args{ua} || do {
+            my $ua = LWP::UserAgent->new;
+            $ua->agent(__PACKAGE__ . '/' . $VERSION);
+            $ua->env_proxy;
+            $ua;
+        },
     }, $class;
 }
 
@@ -42,7 +45,7 @@ sub geocode {
     $u->query_param(appid => $self->{appid});
     $u->query_param($_ => $args{$_}) for keys %args;
 
-    my $resp = _ua->get($u->as_string);
+    my $resp = $self->ua->get($u->as_string);
 
     return $self->{on_error}->($self, $resp)
         if not $resp->is_success;
